@@ -8,62 +8,65 @@ let productSelectOptions;
 let listImg;
 
 window.onload = function(e){
-
-    containerColors = document.querySelector('.container_option1');
-    containerSizes = document.querySelector('.container_option2');
-    productSelect = document.querySelectorAll('#product-select');
-    productSelectOptions = document.querySelectorAll('#product-select option');
-    listImg = document.querySelectorAll('.product-img');
-
+    initVariables();
     if (containerSizes && containerColors) {
-        for (let variant of productSelectOptions) {
-            const variantColor = variant.getAttribute('data-color');
-            if (!colors.includes(variantColor)) {
-                colors.push(variantColor)
-            }
-        }
-        for(let i = 0; i<colors.length; i++) {
-            data[colors[i]] = {};
-            data[colors[i]].products = {};
-            data[colors[i]].images = [];
-            for (let img of listImg) {
-                if(img.getAttribute('data-color') === colors[i]) {
-                    data[colors[i]].images.push(img);
-                }
-            }
-            for (let y = 0; y<productSelectOptions.length; y++) {
-                if (colors[i] === productSelectOptions[y].getAttribute('data-color')) {
-                    data[colors[i]].products[y] = {};
-                    data[colors[i]].products[y].size = productSelectOptions[y].getAttribute('data-size');
-                    data[colors[i]].products[y].value = productSelectOptions[y].getAttribute('value');
-                    data[colors[i]].products[y].disabled = productSelectOptions[y].getAttribute('disabled');
-                }
-            }
-        }
-        console.log(data);
-        if (data) {
-            Object.keys(data).forEach(function (item) {
-                containerColors.innerHTML += ('<li>' + item + '</li>');
-            });
-        }
+        createColorsArray();
+        createDataObject();
+        Object.keys(data).forEach(function (item) {
+            containerColors.innerHTML += ('<li>' + item + '</li>');
+        });
         for (let color of containerColors.querySelectorAll('li')) {
             color.addEventListener('click', () => {
                 switchColor(color)
             })
         }
         verifyIfEmptyColor();
-        let actualColor = 0;
-        let colorAvailable = false;
-        while(!colorAvailable) {
-            if( containerColors.querySelectorAll('li')[actualColor].classList.contains('disabled') ) {
-                actualColor += 1;
-            } else {
-                colorAvailable = containerColors.querySelectorAll('li')[actualColor];
-            }
-        }
-        switchColor(colorAvailable);
+        switchColor( getFirstColorAvailable() );
     }
 };
+
+function getFirstColorAvailable() {
+    let actualColor = 0;
+    let colorAvailable = false;
+    while(!colorAvailable) {
+        if( containerColors.querySelectorAll('li')[actualColor].classList.contains('disabled') ) {
+            actualColor += 1;
+        } else {
+            colorAvailable = containerColors.querySelectorAll('li')[actualColor];
+        }
+    }
+    return colorAvailable;
+}
+
+function createColorsArray() {
+    for (let variant of productSelectOptions) {
+        const variantColor = variant.getAttribute('data-color');
+        if (!colors.includes(variantColor)) {
+            colors.push(variantColor)
+        }
+    }
+}
+
+function createDataObject() {
+    for(let i = 0; i<colors.length; i++) {
+        data[colors[i]] = {};
+        data[colors[i]].products = {};
+        data[colors[i]].images = [];
+        for (let img of listImg) {
+            if(img.getAttribute('data-color') === colors[i]) {
+                data[colors[i]].images.push(img);
+            }
+        }
+        for (let y = 0; y<productSelectOptions.length; y++) {
+            if (colors[i] === productSelectOptions[y].getAttribute('data-color')) {
+                data[colors[i]].products[y] = {};
+                data[colors[i]].products[y].size = productSelectOptions[y].getAttribute('data-size');
+                data[colors[i]].products[y].value = productSelectOptions[y].getAttribute('value');
+                data[colors[i]].products[y].disabled = productSelectOptions[y].getAttribute('disabled');
+            }
+        }
+    }
+}
 
 function verifyIfEmptyColor() {
     Object.keys(data).forEach(function (color) {
@@ -85,6 +88,22 @@ function verifyIfEmptyColor() {
 
 function switchColor(option) {
     updateActive(option, containerColors.querySelectorAll('li'));
+    updateSizeList(option);
+    let newSize = getFirstSizeAvailable();
+    // check if a size has already been selected and is available
+    if(lastSize !== 0) {
+        for (let item of containerSizes.querySelectorAll('li')) {
+            if (item.innerHTML === lastSize && !item.classList.contains('disabled')) {
+                newSize = item;
+            }
+        }
+    }
+    updateSelectedProduct(newSize);
+    initSizeClick(containerSizes.querySelectorAll('li'));
+    updateImages(option.innerHTML);
+}
+
+function updateSizeList(option) {
     var color = option.innerHTML;
     containerSizes.innerHTML = '';
     Object.keys(data[color].products).forEach(function (item) {
@@ -94,9 +113,11 @@ function switchColor(option) {
         }
         containerSizes.innerHTML += '<li class="'+ newClass +'" data-value="' + data[color].products[item].value +'">' + data[color].products[item].size + '</li>'
     });
+}
 
-    let listSizes = containerSizes.querySelectorAll('li');
+function getFirstSizeAvailable() {
     let newSize = false;
+    let listSizes = containerSizes.querySelectorAll('li');
     let actualSizeItem = 0;
     while (!newSize) {
         if(listSizes[actualSizeItem].classList.contains('disabled')) {
@@ -105,17 +126,9 @@ function switchColor(option) {
             newSize = listSizes[actualSizeItem];
         }
     }
-    if(lastSize !== 0) {
-        for (let item of listSizes) {
-            if (item.innerHTML === lastSize && !item.classList.contains('disabled')) {
-                newSize = item;
-            }
-        }
-    }
-    updateSelectedProduct(newSize);
-    initSizeClick(listSizes);
-    updateImages(color);
+    return newSize;
 }
+
 function updateSelectedProduct(sizeLi) {
     updateActive(sizeLi, containerSizes.querySelectorAll('li'));
     var value = sizeLi.getAttribute('data-value');
@@ -125,6 +138,7 @@ function updateSelectedProduct(sizeLi) {
         }
     }
 }
+
 function initSizeClick(list) {
     for (let li of list) {
         li.addEventListener('click', () => {
@@ -133,6 +147,7 @@ function initSizeClick(list) {
         });
     }
 }
+
 function updateActive(item, list) {
     for (let li of list) {
         li.classList.remove('active');
@@ -147,4 +162,12 @@ function updateImages(color) {
     Object.keys(data[color].images).forEach(function (item) {
         data[color].images[item].classList.remove('d-none');
     });
+}
+
+function initVariables() {
+    containerColors = document.querySelector('.container_option1');
+    containerSizes = document.querySelector('.container_option2');
+    productSelect = document.querySelectorAll('#product-select');
+    productSelectOptions = document.querySelectorAll('#product-select option');
+    listImg = document.querySelectorAll('.product-img');
 }
