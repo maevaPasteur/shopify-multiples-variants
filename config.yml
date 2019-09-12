@@ -1,0 +1,19 @@
+development:
+  password: 4bfdbc32edeb8c7c1f5d79dbfd8db950
+  theme_id: "76019466328"
+  store: test-maevapasteur.myshopify.com
+  ignore_files:
+    - "*.gif"
+    - "*.jpg"
+    - config/settings_data.json
+production:
+  password: 4bfdbc32edeb8c7c1f5d79dbfd8db950
+  theme_id: "76019466328"
+  store: test-maevapasteur.myshopify.com
+  timeout: 60s
+  readonly: true
+test:
+  password: 16ef663594568325d64408ebcdeef528
+  theme_id: "76019466328"
+  store: test-maevapasteur.myshopify.com
+  ignores: ignore.txt

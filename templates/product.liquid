@@ -1,0 +1,55 @@
+{% assign current_variant = product.selected_or_first_available_variant %}
+{% assign featured_image = current_variant.featured_image | default: product.featured_image %}
+
+<div class="d-flex page-sneakers">
+    <div class="w-50">
+        {% for image in product.images %}
+            <a href="{{ image.src | img_url: 'large' }}">
+                <img class="product-img d-none" src="{{ image.src | img_url: 'large' }}" data-color="{{ image.alt | escape }}" alt="{{ product.title }} {{ image.alt | escape }}">
+            </a>
+        {% endfor %}
+    </div>
+    <div class="w-50">
+        <h1 class="pt-60">{{ product.title }}</h1>
+        <p>{{ product.description }}</p>
+        <form action="/cart/add" method="post" enctype="multipart/form-data" id="AddToCartForm" class="pt-60">
+
+            <div class="select clearfix">
+                <select name="id" id="product-select">
+                    {% for variant in product.variants %}
+                        {% if variant.available %}
+                            <option value="{{ variant.id }}" data-size="{{variant.option1}}" data-color="{{variant.option2}}">
+                                {{ variant.title }}
+                            </option>
+                        {% else %}
+                            <option disabled="disabled" value="{{ variant.id }}" data-size="{{variant.option1}}" data-color="{{variant.option2}}">
+                                {{ variant.title }} - sold out
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                <div class="container_product-options">
+                    <ul class="container_option1"></ul>
+                    <ul class="container_option2"></ul>
+                </div>
+
+            </div>
+
+
+            <div class="pt-30">
+                {{ current_variant.price | money }}
+            </div>
+            <div class="pb-30 pt-15">
+                <label for="Quantity">quantity</label>
+                <input type="number" id="Quantity" name="quantity" value="1" min="1">
+            </div>
+            <button type="submit" name="add" id="AddToCart" class="btn">Add to cart</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+
